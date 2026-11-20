@@ -3,6 +3,7 @@ import Foundation
 enum SuggestionContext: Equatable {
     case sentence(text: String, caret: Int)
     case replace(word: String, tokenRange: NSRange)
+    case selection(text: String, range: NSRange)
 }
 
 enum Sentence {
@@ -26,6 +27,22 @@ enum Sentence {
         let slice = sentenceSlice(prefix).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !slice.isEmpty, slice.rangeOfCharacter(from: .alphanumerics) != nil else { return nil }
         return .sentence(text: String(slice.suffix(maxLength)), caret: caret)
+    }
+
+    /// Emoji for text the user has highlighted; picking appends at the selection's end.
+    static func selectionContext(
+        value: String,
+        selection: NSRange,
+        enabled: Bool
+    ) -> SuggestionContext? {
+        guard enabled else { return nil }
+        let ns = value as NSString
+        guard selection.length > 0,
+              selection.location >= 0,
+              selection.location + selection.length <= ns.length else { return nil }
+        let text = ns.substring(with: selection).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, text.rangeOfCharacter(from: .alphanumerics) != nil else { return nil }
+        return .selection(text: String(text.suffix(maxLength)), range: selection)
     }
 
     /// `:word` directly before the caret. The colon must not follow a letter or digit, so `12:30` stays plain text.

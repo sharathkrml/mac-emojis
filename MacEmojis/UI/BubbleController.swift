@@ -16,13 +16,26 @@ final class BubblePanel: NSPanel {
 /// SwiftUI's hosting view ignores the first click in an inactive window by default,
 /// which made the first tap on an emoji do nothing.
 final class MouseHostingView<Content: View>: NSHostingView<Content> {
-    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        NSLog("[DEBUG-hx7] acceptsFirstMouse")
+        return true
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        NSLog("[DEBUG-hx7] hosting mouseDown at \(event.locationInWindow)")
+        super.mouseDown(with: event)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        NSLog("[DEBUG-hx7] hosting mouseUp at \(event.locationInWindow)")
+        super.mouseUp(with: event)
+    }
 }
 
 @MainActor
 final class BubbleController {
     private var panel: BubblePanel?
-    private var host: MouseHostingView<BubbleView>?
+    private var model: BubbleModel?
     private var emojis: [String] = []
     private var context: SuggestionContext?
     private var snapshot: FieldSnapshot?
@@ -34,6 +47,7 @@ final class BubbleController {
     private(set) var isEngaged = false
 
     func show(emojis: [String], context: SuggestionContext, snapshot: FieldSnapshot) {
+        NSLog("[DEBUG-hx7] show n=\(emojis.count)")
         guard !emojis.isEmpty else { return }
         self.emojis = emojis
         self.context = context
@@ -41,20 +55,32 @@ final class BubbleController {
         selected = 0
         isEngaged = false
 
-        let host = MouseHostingView(rootView: view(engaged: false))
+        let model = BubbleModel()
+        model.emojis = emojis
+        self.model = model
+
+        let host = MouseHostingView(rootView: BubbleView(
+            model: model,
+            opacity: Prefs.opacity,
+            onEngage: { [weak self] in self?.engage() },
+            onPick: { [weak self] index in self?.pick(index) }
+        ))
         let panel = panel ?? makePanel()
         panel.contentView = host
         host.layoutSubtreeIfNeeded()
         let size = host.fittingSize
-        self.host = host
-        panel.setFrame(frame(for: size, snapshot: snapshot), display: true)
-        panel.orderFrontRegardless()
+
+        let placement = placement(for: size, snapshot: snapshot)
+        model.tailAnchor = placement.tailAnchor
+        model.tailOnTop = placement.tailOnTop
+        present(panel, at: placement.frame)
 
         installMonitors()
         scheduleAutoHide()
     }
 
-    func hide() {
+    func hide(reason: String = "") {
+        NSLog("[DEBUG-hx7] hide reason=\(reason) engaged=\(isEngaged)")
         autoHide?.cancel()
         autoHide = nil
         removeMonitors()
@@ -63,9 +89,12 @@ final class BubbleController {
         let targetPid = snapshot?.pid
         isEngaged = false
         panel?.orderOut(nil)
+        panel?.alphaValue = 1
+        panel?.contentView = nil
         emojis = []
         context = nil
         snapshot = nil
+        model = nil
 
         if wasEngaged, let targetPid, targetPid != ProcessInfo.processInfo.processIdentifier,
            let app = NSRunningApplication(processIdentifier: targetPid) {
@@ -74,24 +103,30 @@ final class BubbleController {
     }
 
     private func engage() {
-        guard !isEngaged, let panel else { return }
+        NSLog("[DEBUG-hx7] engage")
+        guard !isEngaged, let panel, let model else { return }
         isEngaged = true
         autoHide?.cancel()
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
-        render()
+        withAnimation(.snappy(duration: 0.22)) {
+            model.engaged = true
+        }
     }
 
     private func moveSelection(by delta: Int) {
         guard !emojis.isEmpty else { return }
         selected = (selected + delta + emojis.count) % emojis.count
-        render()
+        withAnimation(.snappy(duration: 0.18)) {
+            model?.selected = selected
+        }
     }
 
     private func pick(_ index: Int) {
+        NSLog("[DEBUG-hx7] pick i=\(index)")
         guard emojis.indices.contains(index), let context, let snapshot else { return }
         let emoji = emojis[index]
-        hide()
+        hide(reason: "pick")
         Inserter.insert(emoji, context: context, snapshot: snapshot)
     }
 
@@ -103,21 +138,6 @@ final class BubbleController {
         case 53: hide(); return true
         default: return false
         }
-    }
-
-    private func view(engaged: Bool) -> BubbleView {
-        BubbleView(
-            emojis: emojis,
-            engaged: engaged,
-            selected: selected,
-            opacity: Prefs.opacity,
-            onEngage: { [weak self] in self?.engage() },
-            onPick: { [weak self] index in self?.pick(index) }
-        )
-    }
-
-    private func render() {
-        host?.rootView = view(engaged: isEngaged)
     }
 
     private func makePanel() -> BubblePanel {
@@ -140,58 +160,66 @@ final class BubbleController {
         return panel
     }
 
-    private func frame(for size: CGSize, snapshot: FieldSnapshot) -> NSRect {
-        let caret = snapshot.caretRect.flatMap(AXField.cocoaRect)
-        let field = snapshot.fieldRect.flatMap(AXField.cocoaRect)
-        let axWindow = snapshot.windowRect.flatMap(AXField.cocoaRect)
-        let window = axWindow ?? screenFrame(forPID: snapshot.pid)
+    private func placement(for size: CGSize, snapshot: FieldSnapshot) -> BubblePlacement {
+        var axCaret = snapshot.caretRect
+        var axField = snapshot.fieldRect
+        var axWindow = snapshot.windowRect
 
-        var anchor: CGRect?
-        var isCaret = false
-        if let caret, field.map({
-            $0.insetBy(dx: -200, dy: -200).contains(CGPoint(x: caret.midX, y: caret.midY))
-        }) ?? true {
-            anchor = caret
-            isCaret = true
-        } else if let field {
-            anchor = field
-        } else if let window {
-            anchor = window
-        }
-
-        let mouse = NSEvent.mouseLocation
-        let point = anchor.map { CGPoint(x: $0.midX, y: $0.midY) } ?? mouse
-        let screen = NSScreen.screens.first(where: { $0.frame.contains(point) })
-            ?? NSScreen.main
-            ?? NSScreen.screens[0]
-        let visible = screen.visibleFrame
-
-        guard let anchor else {
-            return NSRect(
-                x: min(max(mouse.x + 12, visible.minX + 8), visible.maxX - size.width - 8),
-                y: min(max(mouse.y - size.height - 12, visible.minY + 8), visible.maxY - size.height - 8),
-                width: size.width,
-                height: size.height
+        // Chromium (Brave, Chrome, Electron) reports AX frames in a window-local
+        // space. Align them with the on-screen window of the same process and size;
+        // native apps already match and shift by zero.
+        if let window = axWindow, let origin = AXField.cgWindowOrigin(pid: snapshot.pid, matching: window.size) {
+            let aligned = AXField.alignedFrames(
+                field: axField,
+                caret: axCaret,
+                axWindow: window,
+                cgOrigin: origin
             )
+            axField = aligned.field
+            axCaret = aligned.caret
+            axWindow = aligned.window
         }
 
-        var x = anchor.midX - size.width / 2
-        var y: CGFloat
-        if isCaret {
-            y = anchor.maxY + 8
-            if y + size.height > visible.maxY {
-                y = anchor.minY - size.height - 8
-            }
-        } else {
-            // A field/window fallback: float near the top edge of that region, inside the screen.
-            y = anchor.maxY - size.height - 10
-            if y < visible.minY {
-                y = anchor.minY + 10
-            }
+        // A caret far outside its field is a bad frame (Chromium sometimes returns
+        // one). The field alone is a reliable anchor.
+        if let caret = axCaret, let field = axField,
+           !field.insetBy(dx: -24, dy: -24).contains(CGPoint(x: caret.midX, y: caret.midY)) {
+            axCaret = nil
         }
-        x = min(max(x, visible.minX + 8), visible.maxX - size.width - 8)
-        y = min(max(y, visible.minY + 8), visible.maxY - size.height - 8)
-        return NSRect(x: x, y: y, width: size.width, height: size.height)
+
+        let caret = axCaret.flatMap(AXField.cocoaRect)
+        let field = axField.flatMap(AXField.cocoaRect)
+        let window = axWindow.flatMap(AXField.cocoaRect) ?? screenFrame(forPID: snapshot.pid)
+        let mouse = NSEvent.mouseLocation
+
+        // Pick the screen from the field, not the caret: the field's screen is what
+        // the user sees, and Chromium's caret can be bogus.
+        let anchorRect = field ?? caret ?? window
+        let screen = anchorRect.flatMap { rect in
+            NSScreen.screens.first { $0.frame.contains(CGPoint(x: rect.midX, y: rect.midY)) }
+        } ?? NSScreen.main ?? NSScreen.screens[0]
+
+        return BubblePlacer.place(
+            panelSize: size,
+            bleed: BubbleView.bleed,
+            caret: caret,
+            field: field,
+            window: window,
+            visible: screen.visibleFrame,
+            mouse: mouse
+        )
+    }
+
+    private func present(_ panel: BubblePanel, at target: NSRect) {
+        panel.alphaValue = 0
+        panel.setFrame(target.offsetBy(dx: 0, dy: -6), display: false)
+        panel.orderFrontRegardless()
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 1
+            panel.animator().setFrame(target, display: true)
+        }
     }
 
     /// Last-resort anchor on the right screen when the app exposes no usable AX bounds.
@@ -220,12 +248,19 @@ final class BubbleController {
     private func installMonitors() {
         removeMonitors()
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            Task { @MainActor in self?.hide() }
+            let point = NSEvent.mouseLocation
+            Task { @MainActor in
+                guard let self else { return }
+                // A click on the bubble itself must reach a chip, not dismiss it.
+                if let panel = self.panel, panel.frame.contains(point) { return }
+                self.hide(reason: "globalMonitor")
+            }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown]) { [weak self] event in
             guard let self, let panel = self.panel else { return event }
             if event.window !== panel {
-                Task { @MainActor in self.hide() }
+                NSLog("[DEBUG-hx7] localMonitor other window: \(event.window?.description ?? "nil")")
+                Task { @MainActor in self.hide(reason: "localMonitor") }
             }
             return event
         }
@@ -241,7 +276,7 @@ final class BubbleController {
     private func scheduleAutoHide() {
         autoHide?.cancel()
         let item = DispatchWorkItem { [weak self] in
-            Task { @MainActor in self?.hide() }
+            Task { @MainActor in self?.hide(reason: "autoHide") }
         }
         autoHide = item
         DispatchQueue.main.asyncAfter(deadline: .now() + 12, execute: item)

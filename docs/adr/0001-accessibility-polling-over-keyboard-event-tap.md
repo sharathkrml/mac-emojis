@@ -11,7 +11,7 @@ MacEmojis must know what the user is typing in *any* app, then react when they p
 1. **Global keyboard event tap** (`CGEventTap`): sees every keypress; requires the Input Monitoring permission and looks like a keylogger to users and to TCC.
 2. **Accessibility (AX) polling**: read the focused text element's value and selection roughly every 200 ms; requires only the Accessibility permission, and reads the text field's content rather than raw keystrokes.
 
-The interaction already waits for a pause of ~0.8 s before suggesting, and Emo takes <2 ms per suggestion, so per-keystroke precision buys nothing. Picking a suggestion is click-driven (first click engages the bubble, then arrows or a second click), so no key capture is needed for navigation either.
+The interaction already waits for a pause of ~0.8 s before suggesting, and Emo takes <2 ms per suggestion, so per-keystroke precision buys nothing. Picking a suggestion is click-driven (one click on an emoji inserts it; clicking the bubble's rim engages it for ←/→ + Enter), so no key capture is needed for navigation either.
 
 ## Decision
 

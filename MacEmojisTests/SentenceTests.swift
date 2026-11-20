@@ -115,6 +115,44 @@ final class SentenceTests: XCTestCase {
         XCTAssertEqual(context, .sentence(text: "second line", caret: 22))
     }
 
+    // MARK: - Selection suggest
+
+    func testSelectedWordsAreSelectionContext() {
+        let context = Sentence.selectionContext(
+            value: "i want a cake today",
+            selection: NSRange(location: 7, length: 7),
+            enabled: true
+        )
+        XCTAssertEqual(context, .selection(text: "a cake", range: NSRange(location: 7, length: 7)))
+    }
+
+    func testSelectionDisabledReturnsNil() {
+        XCTAssertNil(Sentence.selectionContext(
+            value: "a cake", selection: NSRange(location: 0, length: 6), enabled: false
+        ))
+    }
+
+    func testWhitespaceOnlySelectionReturnsNil() {
+        XCTAssertNil(Sentence.selectionContext(
+            value: "a   b", selection: NSRange(location: 1, length: 3), enabled: true
+        ))
+    }
+
+    func testSelectionBeyondValueReturnsNil() {
+        XCTAssertNil(Sentence.selectionContext(
+            value: "abc", selection: NSRange(location: 2, length: 5), enabled: true
+        ))
+    }
+
+    func testSelectionIsCappedAt150Characters() {
+        let value = String(repeating: "a", count: 200)
+        let context = Sentence.selectionContext(
+            value: value, selection: NSRange(location: 0, length: 200), enabled: true
+        )
+        guard case .selection(let text, _)? = context else { return XCTFail("expected selection mode") }
+        XCTAssertEqual(text.count, 150)
+    }
+
     // MARK: - Insertion spacing
 
     func testSpaceIsAddedAfterNonWhitespace() {

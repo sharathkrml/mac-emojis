@@ -4,6 +4,7 @@ enum Prefs {
     static let enabledKey = "enabled"
     static let sentenceKey = "sentenceSuggest"
     static let replaceKey = "replaceMode"
+    static let selectionKey = "selectionSuggest"
     static let pauseKey = "pauseSeconds"
     static let countKey = "suggestionCount"
     static let opacityKey = "bubbleOpacity"
@@ -15,6 +16,7 @@ enum Prefs {
             enabledKey: true,
             sentenceKey: true,
             replaceKey: true,
+            selectionKey: false,
             pauseKey: 0.8,
             countKey: 5,
             opacityKey: 0.95,
@@ -26,6 +28,7 @@ enum Prefs {
     static var enabled: Bool { UserDefaults.standard.bool(forKey: enabledKey) }
     static var sentenceEnabled: Bool { UserDefaults.standard.bool(forKey: sentenceKey) }
     static var replaceEnabled: Bool { UserDefaults.standard.bool(forKey: replaceKey) }
+    static var selectionEnabled: Bool { UserDefaults.standard.bool(forKey: selectionKey) }
 
     static var pause: TimeInterval {
         max(0.3, UserDefaults.standard.double(forKey: pauseKey))

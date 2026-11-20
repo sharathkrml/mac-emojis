@@ -9,6 +9,7 @@ final class TextMonitor {
     private var lastChange = Date.distantPast
     private var shownIdentity: String?
     private var generation = 0
+    private var preparedApps: Set<pid_t> = []
 
     func start() {
         guard timer == nil else { return }
@@ -24,7 +25,7 @@ final class TextMonitor {
         timer?.invalidate()
         timer = nil
         generation += 1
-        bubble?.hide()
+        bubble?.hide(reason: "stop")
         reset()
     }
 
@@ -38,23 +39,36 @@ final class TextMonitor {
         guard Prefs.enabled else { return }
         guard !(bubble?.isEngaged ?? false) else { return }
 
+        // Chromium and Electron keep their accessibility tree dormant until a client
+        // switches it on. Do that once for whatever app is in front; native apps are
+        // already accessible and return immediately.
+        if let app = NSWorkspace.shared.frontmostApplication,
+           !preparedApps.contains(app.processIdentifier),
+           AXField.prepareAccessibility(pid: app.processIdentifier, bundleID: app.bundleIdentifier) {
+            preparedApps.insert(app.processIdentifier)
+        }
+
+        // Clicking the bubble makes the system AX focus unreadable for ~100 ms;
+        // deciding during a held button tears the panel down mid-tap (missed clicks).
+        guard NSEvent.pressedMouseButtons == 0 else { return }
+
         guard let snapshot = AXField.focused() else {
             if lastIdentity != nil {
                 reset()
-                bubble?.hide()
+                bubble?.hide(reason: "noField")
             }
             return
         }
 
         // Our own test field works without Accessibility trust; other apps do not.
         guard snapshot.isOurs || AXField.isTrusted() else { return }
-        guard snapshot.selection.length == 0 else { return }
 
         if snapshot.identity != lastIdentity {
+            NSLog("[DEBUG-hx7] identityChange sel=\(snapshot.selection) len=\(snapshot.value.count) prev=\(lastIdentity ?? "nil")")
             lastIdentity = snapshot.identity
             lastChange = Date()
             shownIdentity = nil
-            bubble?.hide()
+            bubble?.hide(reason: "identityChange")
             return
         }
 
@@ -65,16 +79,26 @@ final class TextMonitor {
     }
 
     private func requestSuggestions(for snapshot: FieldSnapshot) {
-        guard let context = Sentence.context(
-            value: snapshot.value,
-            caret: snapshot.selection.location,
-            replaceEnabled: Prefs.replaceEnabled,
-            sentenceEnabled: Prefs.sentenceEnabled
-        ) else { return }
+        let context: SuggestionContext?
+        if snapshot.selection.length > 0 {
+            context = Sentence.selectionContext(
+                value: snapshot.value,
+                selection: snapshot.selection,
+                enabled: Prefs.selectionEnabled
+            )
+        } else {
+            context = Sentence.context(
+                value: snapshot.value,
+                caret: snapshot.selection.location,
+                replaceEnabled: Prefs.replaceEnabled,
+                sentenceEnabled: Prefs.sentenceEnabled
+            )
+        }
+        guard let context else { return }
 
         let query: String
         switch context {
-        case .sentence(let text, _): query = text
+        case .sentence(let text, _), .selection(let text, _): query = text
         case .replace(let word, _): query = word
         }
 
@@ -86,9 +110,7 @@ final class TextMonitor {
             var emojis = await EmoService.shared.suggestions(for: query)
             guard generation == self.generation else { return }
 
-            if case .sentence(let sentence, _) = context {
-                emojis = emojis.filter { !sentence.contains($0) }
-            }
+            emojis = emojis.filter { !query.contains($0) }
             guard !emojis.isEmpty else { return }
 
             self.bubble?.show(emojis: emojis, context: context, snapshot: snapshot)

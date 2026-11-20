@@ -4,7 +4,9 @@
 
 **Replace Mode** — The mode triggered by a trailing `:word` token (e.g. `:heart`). Picking an emoji deletes the token, colon included, and puts the emoji in its place. Ranking reads only the word after the colon.
 
-**Suggestion Bubble** — The floating, caret-anchored panel of up to 8 emoji candidates (5 by default). It appears without stealing focus; the first click engages it, then ←/→ move the highlight and Enter — or a second click — chooses.
+**Selection Suggest** — The mode where highlighting words and pausing shows a bubble ranked from the selected text. Picking appends the emoji at the end of the selection; the words are kept. Off by default, because selections are made for many reasons.
+
+**Suggestion Bubble** — The floating thought bubble of up to 8 emoji candidates (5 by default), anchored above the typed line with a tail pointing at the caret. If the caret is below the first line of a multi-line field it rises above the whole field instead, so no text is covered. It appears without stealing focus; clicking an emoji inserts it, while clicking the bubble itself engages it for ←/→ and Enter.
 
 **Pause Debounce** — The quiet period after the last text change (default 0.8 s) that must pass before the Suggestion Bubble appears. Fully configurable in Settings.
 

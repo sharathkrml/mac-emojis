@@ -4,6 +4,7 @@ import ApplicationServices
 @MainActor
 enum Inserter {
     static func insert(_ emoji: String, context: SuggestionContext, snapshot: FieldSnapshot) {
+        NSLog("[DEBUG-hx7] insert context=\(context) emoji=\(emoji)")
         let text = snapshot.value as NSString
         let range: NSRange
         let insertion: String
@@ -18,6 +19,13 @@ enum Inserter {
                 ? text.substring(with: NSRange(location: caret - 1, length: 1)).first
                 : nil
             insertion = composedText(emoji: emoji, caret: caret, charBefore: before)
+        case .selection(_, let selRange):
+            range = NSRange(location: NSMaxRange(selRange), length: 0)
+            let end = range.location
+            let before = end > 0
+                ? text.substring(with: NSRange(location: end - 1, length: 1)).first
+                : nil
+            insertion = composedText(emoji: emoji, caret: end, charBefore: before)
         }
 
         if snapshot.pid == ProcessInfo.processInfo.processIdentifier {
@@ -36,6 +44,15 @@ enum Inserter {
 
             AXUIElementSetAttributeValue(snapshot.element, kAXFocusedAttribute as CFString, kCFBooleanTrue)
             try? await Task.sleep(nanoseconds: 40_000_000)
+
+            // Web editors (Twitter/Draft.js, Gmail, Slack) keep their own text model.
+            // Mutating AXSelectedText changes the DOM but not the model, which leaves
+            // ghost text and a dead Backspace. A real paste goes through the editor.
+            if snapshot.isWebContent {
+                NSLog("MacEmojis insert: paste (web)")
+                fallbackPaste(range: range, text: insertion, into: snapshot.element)
+                return
+            }
 
             if AXField.apply(range, text: insertion, to: snapshot.element) {
                 NSLog("MacEmojis insert: selected text")
