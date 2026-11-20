@@ -1,0 +1,67 @@
+name: MacEmojis
+options:
+  bundleIdPrefix: com.sharath
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+packages:
+  DesertAntCore:
+    url: https://github.com/Desert-Ant-Labs/desert-ant-core.git
+    from: 4.3.0
+targets:
+  MacEmojis:
+    type: application
+    platform: macOS
+    sources:
+      - path: MacEmojis
+    dependencies:
+      - package: DesertAntCore
+        product: Emo
+    info:
+      path: MacEmojis/Info.plist
+      properties:
+        CFBundleName: MacEmojis
+        CFBundleDisplayName: MacEmojis
+        LSApplicationCategoryType: public.app-category.productivity
+        LSUIElement: true
+        LSMinimumSystemVersion: "15.0"
+        NSHighResolutionCapable: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sharath.MacEmojis
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: 83JSBLYT7Z
+        ENABLE_HARDENED_RUNTIME: NO
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+  MacEmojisTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: MacEmojisTests
+    dependencies:
+      - target: MacEmojis
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sharath.MacEmojisTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MacEmojis.app/Contents/MacOS/MacEmojis"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  MacEmojis:
+    build:
+      targets:
+        MacEmojis: all
+        MacEmojisTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - MacEmojisTests
+    archive:
+      config: Release
