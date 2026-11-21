@@ -3,8 +3,11 @@ import SwiftUI
 
 final class BubblePanel: NSPanel {
     var onKey: ((NSEvent) -> Bool)?
+    /// A chip click must not take keyboard focus from the browser, or the paste
+    /// that follows lands nowhere. Only the engaged bubble needs to be key.
+    var wantsKey = false
 
-    override var canBecomeKey: Bool { true }
+    override var canBecomeKey: Bool { wantsKey }
     override var canBecomeMain: Bool { false }
 
     override func keyDown(with event: NSEvent) {
@@ -66,6 +69,7 @@ final class BubbleController {
             onPick: { [weak self] index in self?.pick(index) }
         ))
         let panel = panel ?? makePanel()
+        panel.wantsKey = false
         panel.contentView = host
         host.layoutSubtreeIfNeeded()
         let size = host.fittingSize
@@ -88,6 +92,7 @@ final class BubbleController {
         let wasEngaged = isEngaged
         let targetPid = snapshot?.pid
         isEngaged = false
+        panel?.wantsKey = false
         panel?.orderOut(nil)
         panel?.alphaValue = 1
         panel?.contentView = nil
@@ -107,6 +112,7 @@ final class BubbleController {
         guard !isEngaged, let panel, let model else { return }
         isEngaged = true
         autoHide?.cancel()
+        panel.wantsKey = true
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         withAnimation(.snappy(duration: 0.22)) {

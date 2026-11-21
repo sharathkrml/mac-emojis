@@ -106,7 +106,9 @@ enum AXField {
 
     private static func hasWebAncestor(_ element: AXUIElement) -> Bool {
         var node: AXUIElement? = element
-        for _ in 0..<8 {
+        // X's composer sits ~28 groups below its AXWebArea, so walk to the window;
+        // the cap only guards against a pathological parent cycle.
+        for _ in 0..<64 {
             guard let current = node else { return false }
             let role = attribute(current, kAXRoleAttribute) as? String ?? ""
             if role == "AXWebArea" { return true }

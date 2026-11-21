@@ -76,8 +76,18 @@ enum Inserter {
     private static func fallbackPaste(range: NSRange, text: String, into element: AXUIElement) {
         AXField.select(range, in: element)
 
+        // NSPasteboardItem is not NSCopying; snapshot it by its data, or `copy()`
+        // raises an exception that aborts the insertion before Cmd+V is posted.
         let pasteboard = NSPasteboard.general
-        let saved = pasteboard.pasteboardItems?.compactMap { $0.copy() as? NSPasteboardItem } ?? []
+        let saved: [NSPasteboardItem] = pasteboard.pasteboardItems?.map { item -> NSPasteboardItem in
+            let copy = NSPasteboardItem()
+            for type in item.types {
+                if let data = item.data(forType: type) {
+                    copy.setData(data, forType: type)
+                }
+            }
+            return copy
+        } ?? []
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
 
