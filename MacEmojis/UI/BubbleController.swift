@@ -65,7 +65,12 @@ final class BubbleController {
         let placement = placement(for: size, snapshot: snapshot)
         model.tailAnchor = placement.tailAnchor
         model.tailOnTop = placement.tailOnTop
-        present(panel, at: placement.frame)
+
+        // SwiftUI owns the entrance: growing out of the tail reads better than a
+        // window-wide fade, which would also soften the emoji popping in.
+        panel.alphaValue = 1
+        panel.setFrame(placement.frame, display: false)
+        panel.orderFrontRegardless()
 
         installMonitors()
         scheduleAutoHide()
@@ -199,18 +204,6 @@ final class BubbleController {
             visible: screen.visibleFrame,
             mouse: mouse
         )
-    }
-
-    private func present(_ panel: BubblePanel, at target: NSRect) {
-        panel.alphaValue = 0
-        panel.setFrame(target.offsetBy(dx: 0, dy: -6), display: false)
-        panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.18
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            panel.animator().alphaValue = 1
-            panel.animator().setFrame(target, display: true)
-        }
     }
 
     /// Last-resort anchor on the right screen when the app exposes no usable AX bounds.
