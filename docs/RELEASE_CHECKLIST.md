@@ -16,7 +16,7 @@ Done in this pass:
 - [x] Fixed the clipboard restore race.
 - [x] `ARCHS=arm64` and a `make release` target that passes it explicitly.
 - [x] Pinned Emo to `4.3.0`.
-- [x] Ad-hoc signing by default so contributors can build.
+- [x] Ad-hoc signing by default so contributors can build; `Config/Local.xcconfig` restores a stable Apple Development signature locally.
 - [x] Version set to `0.1.0`; Info.plist uses the build settings.
 - [x] MIT `LICENSE`, `THIRD_PARTY_NOTICES.md`, `PRIVACY.md`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`.
 - [x] Public `README.md` and GitHub metadata copy.
@@ -47,7 +47,7 @@ Deferred for a binary release:
 | Debug build | Passes, arm64, ad-hoc signed |
 | `make release` | Passes, arm64, hardened runtime on |
 | Plain `xcodebuild -configuration Release` without `ARCHS=arm64` | Still fails in the Emo package for x86_64; use `make release` |
-| Signature on current build | Ad-hoc (`CODE_SIGN_IDENTITY = -`), no team |
+| Signature | Public default is ad-hoc; `Config/Local.xcconfig` signs locally with Apple Development for a stable Accessibility grant |
 | App icon | **None** — deferred for the binary release |
 | Version | **0.1.0** (`CFBundleVersion` 1) |
 | GitHub repo | public; description, homepage, topics, MIT license, Discussions, private vulnerability reporting |

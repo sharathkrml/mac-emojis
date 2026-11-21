@@ -51,7 +51,16 @@ On first launch, a four-step onboarding panel opens: welcome, Accessibility plus
 
 ### Signing
 
-The project builds with ad-hoc signing by default so anyone can compile it. An ad-hoc signature changes on every rebuild, which may reset the Accessibility grant. For a stable grant, set your own Apple Development team in Xcode or pass it to `xcodebuild`:
+The repo signs ad-hoc by default so anyone can compile it. An ad-hoc signature changes on every rebuild, which may reset the Accessibility grant.
+
+For a stable grant, create `Config/Local.xcconfig` (gitignored):
+
+```xcconfig
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+CODE_SIGN_IDENTITY = Apple Development
+```
+
+`Config/Signing.xcconfig` includes it automatically. Alternatively, pass the settings to `xcodebuild`:
 
 ```bash
 xcodebuild -scheme MacEmojis -configuration Debug \
@@ -60,6 +69,8 @@ xcodebuild -scheme MacEmojis -configuration Debug \
   DEVELOPMENT_TEAM=YOUR_TEAM_ID \
   CODE_SIGN_IDENTITY="Apple Development" build
 ```
+
+After changing signing, remove the old MacEmojis entry from System Settings → Privacy & Security → Accessibility and grant the newly signed build once.
 
 ### Release build
 

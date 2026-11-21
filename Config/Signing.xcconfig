@@ -1,0 +1,9 @@
+// Default signing for the public repo: ad-hoc, no certificate needed.
+// For a stable Accessibility grant on your own Mac, create Config/Local.xcconfig
+// (gitignored) with:
+//   DEVELOPMENT_TEAM = YOUR_TEAM_ID
+//   CODE_SIGN_IDENTITY = Apple Development
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+
+#include? "Local.xcconfig"

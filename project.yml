@@ -8,6 +8,9 @@ settings:
   base:
     # Emo's Core AI path does not compile for x86_64 on macOS.
     ARCHS: arm64
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
 packages:
   DesertAntCore:
     url: https://github.com/Desert-Ant-Labs/desert-ant-core.git
@@ -38,10 +41,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.sharath.MacEmojis
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "5.0"
-        # Ad-hoc by default so anyone can build without the author's certificate.
-        # Set your own team in Xcode for a stable Accessibility grant.
-        CODE_SIGN_IDENTITY: "-"
-        CODE_SIGN_STYLE: Manual
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         # Emo's Core AI path does not compile for x86_64 on macOS.
@@ -62,8 +61,6 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: "5.0"
         ARCHS: arm64
-        CODE_SIGN_IDENTITY: "-"
-        CODE_SIGN_STYLE: Manual
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MacEmojis.app/Contents/MacOS/MacEmojis"
         BUNDLE_LOADER: "$(TEST_HOST)"
 schemes:

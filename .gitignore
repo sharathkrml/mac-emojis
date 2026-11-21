@@ -13,5 +13,8 @@ DerivedData/
 ExportOptions.plist
 SHA256SUMS.txt
 
+# Local signing (team ID + certificate)
+Config/Local.xcconfig
+
 # Local AI tooling
 .opencode/
