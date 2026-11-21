@@ -141,3 +141,4 @@ Security issues: please report them privately — see [SECURITY.md](SECURITY.md)
 MacEmojis is open source under the [MIT License](LICENSE).
 
 The Emo model and SDK are licensed separately by Desert Ant Labs under the [Desert Ant Labs Source-Available License](https://license.desertant.com/). They are free below 100,000 monthly active devices per platform, per model. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
