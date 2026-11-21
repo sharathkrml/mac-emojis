@@ -24,6 +24,8 @@ Done in this pass:
 - [x] CI workflow, issue templates, PR template.
 - [x] Removed `.opencode/` from the public tree.
 - [x] Added `Inserter` tests: **31 tests, 0 failures**.
+- [x] CI passes on `macos-latest` (tests + release build).
+- [x] GitHub release `v0.1.0` published with source notes.
 
 Deferred for a binary release:
 
@@ -48,7 +50,9 @@ Deferred for a binary release:
 | Signature on current build | Ad-hoc (`CODE_SIGN_IDENTITY = -`), no team |
 | App icon | **None** — deferred for the binary release |
 | Version | **0.1.0** (`CFBundleVersion` 1) |
-| GitHub repo | public; description/topics updated after push |
+| GitHub repo | public; description, homepage, topics, MIT license, Discussions, private vulnerability reporting |
+| GitHub release | **v0.1.0** source release; no binary assets |
+| CI | Passing on `macos-latest` (31 tests + release build) |
 | Bundle ID | `com.sharath.MacEmojis` |
 | Deployment target | macOS 15.0 |
 
