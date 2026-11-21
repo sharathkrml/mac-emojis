@@ -1,5 +1,7 @@
 # MacEmojis
 
+[![CI](https://github.com/sharathkrml/mac-emojis/actions/workflows/ci.yml/badge.svg)](https://github.com/sharathkrml/mac-emojis/actions/workflows/ci.yml)
+
 **The emoji you meant, right where you're typing.**
 
 MacEmojis is a menu-bar app for macOS that suggests emoji as you type — in any app. Type, pause, and a small thought bubble appears above the line with emoji that fit the moment. Click one to insert it.
