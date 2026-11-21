@@ -210,7 +210,8 @@ Still useful:
 - [ ] Add a demo GIF/screenshot: bubble over a sentence, `:cake` replace mode, Settings. 3–5 images.
 - [ ] Upload a 1280×640 social preview image.
 - [ ] Pin the repo on your profile; update your profile bio (copy in `docs/LAUNCH_COPY.md`).
-- [ ] Enable **Private vulnerability reporting** under Settings → Code security.
+- [x] Enable **Private vulnerability reporting** under Settings → Code security.
+- [x] Enable Discussions for questions and ideas.
 
 ### 11. Clean the public repo — DONE
 
