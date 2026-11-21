@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest a feature or an improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        MacEmojis is intentionally small and private. Features that add telemetry, accounts, or network calls are unlikely to be accepted.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: "I often ... and the app ..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: input
+    id: apps
+    attributes:
+      label: Apps where this matters
+      placeholder: "e.g. Notes, Chrome, Slack"

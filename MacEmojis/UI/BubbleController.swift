@@ -20,18 +20,7 @@ final class BubblePanel: NSPanel {
 /// which made the first tap on an emoji do nothing.
 final class MouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-        NSLog("[DEBUG-hx7] acceptsFirstMouse")
-        return true
-    }
-
-    override func mouseDown(with event: NSEvent) {
-        NSLog("[DEBUG-hx7] hosting mouseDown at \(event.locationInWindow)")
-        super.mouseDown(with: event)
-    }
-
-    override func mouseUp(with event: NSEvent) {
-        NSLog("[DEBUG-hx7] hosting mouseUp at \(event.locationInWindow)")
-        super.mouseUp(with: event)
+        true
     }
 }
 
@@ -39,7 +28,7 @@ final class MouseHostingView<Content: View>: NSHostingView<Content> {
 final class BubbleController {
     private var panel: BubblePanel?
     private var model: BubbleModel?
-    private var emojis: [String] = []
+    private var suggestions: [Suggestion] = []
     private var context: SuggestionContext?
     private var snapshot: FieldSnapshot?
     private var selected = 0
@@ -49,17 +38,16 @@ final class BubbleController {
 
     private(set) var isEngaged = false
 
-    func show(emojis: [String], context: SuggestionContext, snapshot: FieldSnapshot) {
-        NSLog("[DEBUG-hx7] show n=\(emojis.count)")
-        guard !emojis.isEmpty else { return }
-        self.emojis = emojis
+    func show(suggestions: [Suggestion], context: SuggestionContext, snapshot: FieldSnapshot) {
+        guard !suggestions.isEmpty else { return }
+        self.suggestions = suggestions
         self.context = context
         self.snapshot = snapshot
         selected = 0
         isEngaged = false
 
         let model = BubbleModel()
-        model.emojis = emojis
+        model.suggestions = suggestions
         self.model = model
 
         let host = MouseHostingView(rootView: BubbleView(
@@ -84,7 +72,6 @@ final class BubbleController {
     }
 
     func hide(reason: String = "") {
-        NSLog("[DEBUG-hx7] hide reason=\(reason) engaged=\(isEngaged)")
         autoHide?.cancel()
         autoHide = nil
         removeMonitors()
@@ -96,7 +83,7 @@ final class BubbleController {
         panel?.orderOut(nil)
         panel?.alphaValue = 1
         panel?.contentView = nil
-        emojis = []
+        suggestions = []
         context = nil
         snapshot = nil
         model = nil
@@ -108,7 +95,6 @@ final class BubbleController {
     }
 
     private func engage() {
-        NSLog("[DEBUG-hx7] engage")
         guard !isEngaged, let panel, let model else { return }
         isEngaged = true
         autoHide?.cancel()
@@ -121,17 +107,16 @@ final class BubbleController {
     }
 
     private func moveSelection(by delta: Int) {
-        guard !emojis.isEmpty else { return }
-        selected = (selected + delta + emojis.count) % emojis.count
+        guard !suggestions.isEmpty else { return }
+        selected = (selected + delta + suggestions.count) % suggestions.count
         withAnimation(.snappy(duration: 0.18)) {
             model?.selected = selected
         }
     }
 
     private func pick(_ index: Int) {
-        NSLog("[DEBUG-hx7] pick i=\(index)")
-        guard emojis.indices.contains(index), let context, let snapshot else { return }
-        let emoji = emojis[index]
+        guard suggestions.indices.contains(index), let context, let snapshot else { return }
+        let emoji = suggestions[index].emoji
         hide(reason: "pick")
         Inserter.insert(emoji, context: context, snapshot: snapshot)
     }
@@ -265,7 +250,6 @@ final class BubbleController {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown]) { [weak self] event in
             guard let self, let panel = self.panel else { return event }
             if event.window !== panel {
-                NSLog("[DEBUG-hx7] localMonitor other window: \(event.window?.description ?? "nil")")
                 Task { @MainActor in self.hide(reason: "localMonitor") }
             }
             return event

@@ -1,6 +1,11 @@
 import Foundation
 import Emo
 
+struct Suggestion: Equatable {
+    let emoji: String
+    let confidence: Double
+}
+
 enum SkinTone: Int, CaseIterable, Identifiable {
     case natural, light, mediumLight, medium, mediumDark, dark
 
@@ -46,6 +51,11 @@ final class EmoService: ObservableObject {
 
     private let emo = Emo()
 
+    /// Below this the model is guessing: on plain text like "the" its best
+    /// emoji scores under 0.1, while real intents start around 0.2. Dropping
+    /// the whole result hides the bubble rather than showing noise.
+    static let minConfidence = 0.2
+
     @Published private(set) var downloaded = false
     @Published private(set) var progress: Double?
     @Published private(set) var errorText: String?
@@ -63,10 +73,12 @@ final class EmoService: ObservableObject {
         downloaded = emo.isDownloaded()
     }
 
-    func suggestions(for text: String) async -> [String] {
+    func suggestions(for text: String) async -> [Suggestion] {
         do {
             let results = try await emo.suggestions(for: text, limit: Prefs.count, skinTone: selectedSkinTone)
-            return results.map(\.emoji)
+            return results
+                .filter { $0.confidence >= Self.minConfidence }
+                .map { Suggestion(emoji: $0.emoji, confidence: $0.confidence) }
         } catch {
             return []
         }
@@ -77,8 +89,8 @@ final class EmoService: ObservableObject {
         progress = 0
         errorText = nil
         do {
-            try await emo.download { fraction in
-                Task { @MainActor [weak self] in
+            try await emo.download { [weak self] fraction in
+                Task { @MainActor in
                     self?.progress = fraction
                 }
             }

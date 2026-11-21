@@ -4,7 +4,6 @@ import ApplicationServices
 @MainActor
 enum Inserter {
     static func insert(_ emoji: String, context: SuggestionContext, snapshot: FieldSnapshot) {
-        NSLog("[DEBUG-hx7] insert context=\(context) emoji=\(emoji)")
         let text = snapshot.value as NSString
         let range: NSRange
         let insertion: String
@@ -49,20 +48,16 @@ enum Inserter {
             // Mutating AXSelectedText changes the DOM but not the model, which leaves
             // ghost text and a dead Backspace. A real paste goes through the editor.
             if snapshot.isWebContent {
-                NSLog("MacEmojis insert: paste (web)")
                 fallbackPaste(range: range, text: insertion, into: snapshot.element)
                 return
             }
 
             if AXField.apply(range, text: insertion, to: snapshot.element) {
-                NSLog("MacEmojis insert: selected text")
                 return
             }
             if AXField.replaceValue(range, with: insertion, in: snapshot.element) {
-                NSLog("MacEmojis insert: value replace")
                 return
             }
-            NSLog("MacEmojis insert: paste fallback")
             fallbackPaste(range: range, text: insertion, into: snapshot.element)
         }
     }
@@ -90,12 +85,15 @@ enum Inserter {
         } ?? []
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
+        let ownChangeCount = pasteboard.changeCount
 
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 120_000_000)
             postCommandV()
             try? await Task.sleep(nanoseconds: 400_000_000)
-            guard pasteboard.changeCount > 0 else { return }
+            // Restore only if nothing copied after us; otherwise we would clobber
+            // the user's newer clipboard contents.
+            guard pasteboard.changeCount == ownChangeCount else { return }
             pasteboard.clearContents()
             if !saved.isEmpty { pasteboard.writeObjects(saved) }
         }

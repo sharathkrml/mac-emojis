@@ -5,5 +5,13 @@ MacEmojis.xcodeproj/
 
 # Build output
 build/
+build-release*/
 DerivedData/
 .swiftpm/
+*.xcarchive
+*.dmg
+ExportOptions.plist
+SHA256SUMS.txt
+
+# Local AI tooling
+.opencode/

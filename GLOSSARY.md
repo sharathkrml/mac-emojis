@@ -10,6 +10,8 @@
 
 **Pause Debounce** — The quiet period after the last text change (default 0.8 s) that must pass before the Suggestion Bubble appears. Fully configurable in Settings.
 
+**Confidence Floor** — Emo scores every candidate from 0 to 1. Suggestions below 0.2 (`EmoService.minConfidence`) are dropped, and if nothing clears the floor no bubble appears, so plain or ambiguous text stays quiet.
+
 **Sentence Slice** — The text handed to Emo: everything after the last `.`, `?`, `!` or newline up to the caret, capped at 150 characters. Emo is tuned for short intent text, not whole drafts.
 
 **Focused Field** — The text input element the user is typing into, read through macOS Accessibility. Fields with the `AXSecureTextField` subrole are never read.

@@ -2,7 +2,7 @@ import SwiftUI
 
 @MainActor
 final class BubbleModel: ObservableObject {
-    @Published var emojis: [String] = []
+    @Published var suggestions: [Suggestion] = []
     @Published var engaged = false
     @Published var selected = 0
     @Published var tailAnchor: CGFloat = 0.5
@@ -37,9 +37,9 @@ struct BubbleView: View {
 
     private var bubble: some View {
         HStack(spacing: Self.spacing) {
-            ForEach(Array(model.emojis.enumerated()), id: \.offset) { index, emoji in
+            ForEach(Array(model.suggestions.enumerated()), id: \.offset) { index, suggestion in
                 EmojiChip(
-                    emoji: emoji,
+                    suggestion: suggestion,
                     index: index,
                     selected: model.engaged && model.selected == index,
                     engaged: model.engaged,
@@ -68,7 +68,7 @@ struct BubbleView: View {
 
     /// Three detached puffs trailing toward the caret, like a thought bubble.
     private var tail: some View {
-        let width = Self.contentWidth(count: model.emojis.count)
+        let width = Self.contentWidth(count: model.suggestions.count)
         let x = min(max(model.tailAnchor * width, 12), width - 12)
         let sizes: [CGFloat] = model.tailOnTop ? [4, 7, 10] : [10, 7, 4]
         let offsets: [(CGFloat, CGFloat)] = [(-8, 0), (1, 10), (-3, 20)]
@@ -93,7 +93,7 @@ struct BubbleView: View {
 }
 
 private struct EmojiChip: View {
-    let emoji: String
+    let suggestion: Suggestion
     let index: Int
     let selected: Bool
     let engaged: Bool
@@ -102,28 +102,38 @@ private struct EmojiChip: View {
     @State private var appeared = false
     @State private var hovered = false
 
+    private var value: String {
+        String(format: "%.2f", suggestion.confidence)
+    }
+
     var body: some View {
-        Text(emoji)
-            .font(.system(size: 26))
-            .scaleEffect(scale)
-            .frame(width: 42, height: 42)
-            .background {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(highlight)
+        VStack(spacing: 0) {
+            Text(suggestion.emoji)
+                .font(.system(size: 26))
+            Text(value)
+                .font(.system(size: 8, weight: .medium))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+        }
+        .scaleEffect(scale)
+        .frame(width: 42, height: 48)
+        .background {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(highlight)
+        }
+        .opacity(appeared ? 1 : 0)
+        .contentShape(Rectangle())
+        .accessibilityLabel("Insert \(suggestion.emoji), score \(value)")
+        .accessibilityAddTraits(.isButton)
+        .onTapGesture(perform: onPick)
+        .onHover { inside in
+            withAnimation(.snappy(duration: 0.16)) { hovered = inside }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.72).delay(Double(index) * 0.03)) {
+                appeared = true
             }
-            .opacity(appeared ? 1 : 0)
-            .contentShape(Rectangle())
-            .accessibilityLabel("Insert \(emoji)")
-            .accessibilityAddTraits(.isButton)
-            .onTapGesture(perform: onPick)
-            .onHover { inside in
-                withAnimation(.snappy(duration: 0.16)) { hovered = inside }
-            }
-            .onAppear {
-                withAnimation(.spring(response: 0.34, dampingFraction: 0.72).delay(Double(index) * 0.03)) {
-                    appeared = true
-                }
-            }
+        }
     }
 
     private var scale: CGFloat {

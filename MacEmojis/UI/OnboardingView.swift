@@ -207,7 +207,7 @@ struct OnboardingView: View {
         let text = demoText.trimmingCharacters(in: .whitespacesAndNewlines)
         var values: [String] = []
         if emo.downloaded {
-            values = await emo.suggestions(for: text)
+            values = await emo.suggestions(for: text).map(\.emoji)
         }
         if values.isEmpty {
             values = sampleEmoji

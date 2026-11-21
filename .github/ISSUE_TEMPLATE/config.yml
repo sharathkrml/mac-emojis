@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security issue
+    url: https://github.com/sharathkrml/mac-emojis/security/advisories/new
+    about: Please report vulnerabilities privately, not in a public issue.
+  - name: Questions and ideas
+    url: https://github.com/sharathkrml/mac-emojis/discussions
+    about: Ask a question or discuss an idea.

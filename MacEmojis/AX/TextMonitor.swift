@@ -64,7 +64,6 @@ final class TextMonitor {
         guard snapshot.isOurs || AXField.isTrusted() else { return }
 
         if snapshot.identity != lastIdentity {
-            NSLog("[DEBUG-hx7] identityChange sel=\(snapshot.selection) len=\(snapshot.value.count) prev=\(lastIdentity ?? "nil")")
             lastIdentity = snapshot.identity
             lastChange = Date()
             shownIdentity = nil
@@ -107,13 +106,13 @@ final class TextMonitor {
 
         Task { @MainActor [weak self] in
             guard let self else { return }
-            var emojis = await EmoService.shared.suggestions(for: query)
+            var suggestions = await EmoService.shared.suggestions(for: query)
             guard generation == self.generation else { return }
 
-            emojis = emojis.filter { !query.contains($0) }
-            guard !emojis.isEmpty else { return }
+            suggestions = suggestions.filter { !query.contains($0.emoji) }
+            guard !suggestions.isEmpty else { return }
 
-            self.bubble?.show(emojis: emojis, context: context, snapshot: snapshot)
+            self.bubble?.show(suggestions: suggestions, context: context, snapshot: snapshot)
         }
     }
 }

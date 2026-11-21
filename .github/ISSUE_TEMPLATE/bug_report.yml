@@ -1,0 +1,63 @@
+name: Bug report
+description: Something is broken or the bubble behaves unexpectedly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please do not paste real private text, passwords, or message contents. Redact anything sensitive.
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "e.g. macOS 15.2"
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: MacEmojis version
+      description: Found in About MacEmojis or the app bundle.
+      placeholder: "e.g. 0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: target-app
+    attributes:
+      label: App you were typing in
+      placeholder: "e.g. Safari, Slack, VS Code"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Type "..."
+        2. Pause
+        3. Click ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: input
+    id: chip
+    attributes:
+      label: Mac model
+      placeholder: "e.g. MacBook Air M2"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or notes
+      description: Drag images here. Remove private content first.

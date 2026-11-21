@@ -28,7 +28,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Prefs.registerDefaults()
-        NSLog("MacEmojis trust=%d path=%@", AXField.isTrusted() ? 1 : 0, Bundle.main.bundlePath)
         monitor.bubble = bubble
         buildMenu()
 
@@ -52,6 +51,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.image?.isTemplate = true
 
         let menu = NSMenu()
+
+        let about = NSMenuItem(title: "About MacEmojis", action: #selector(showAbout), keyEquivalent: "")
+        about.target = self
+        menu.addItem(about)
+        menu.addItem(.separator())
+
         enabledItem.target = self
         enabledItem.action = #selector(toggleEnabled)
         menu.addItem(enabledItem)
@@ -60,10 +65,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let settings = NSMenuItem(title: "Settings…", action: #selector(openWindow), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
+
+        let github = NSMenuItem(title: "MacEmojis on GitHub", action: #selector(openGitHub), keyEquivalent: "")
+        github.target = self
+        menu.addItem(github)
+
+        let issues = NSMenuItem(title: "Report an Issue…", action: #selector(openIssues), keyEquivalent: "")
+        issues.target = self
+        menu.addItem(issues)
         menu.addItem(.separator())
+
         menu.addItem(NSMenuItem(title: "Quit MacEmojis", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem.menu = menu
+    }
+
+    @objc private func showAbout() {
+        let credits = NSMutableAttributedString(
+            string: "On-device emoji suggestions for macOS.\n\nPowered by Desert Ant Labs 🐜\nhttps://desertant.com/\n\nMIT License",
+            attributes: [.font: NSFont.systemFont(ofSize: 11)]
+        )
+        if let range = credits.string.range(of: "https://desertant.com/") {
+            credits.addAttribute(
+                .link,
+                value: "https://desertant.com/",
+                range: NSRange(range, in: credits.string)
+            )
+        }
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc private func openGitHub() {
+        open("https://github.com/sharathkrml/mac-emojis")
+    }
+
+    @objc private func openIssues() {
+        open("https://github.com/sharathkrml/mac-emojis/issues/new/choose")
+    }
+
+    private func open(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        NSWorkspace.shared.open(url)
     }
 
     private func syncEnabled() {
