@@ -4,6 +4,14 @@
 
 **The emoji you meant, right where you're typing.**
 
+> **TLDR — let your agent set it up.** Paste this into Claude Code, Codex, Cursor, or OpenCode:
+>
+> ```text
+> Bro, set this up for me: https://github.com/sharathkrml/mac-emojis
+> ```
+>
+> It clones the repo, installs XcodeGen, builds the app, and walks you through the one macOS permission. Prefer to do it yourself? [Build from source](#build-from-source).
+
 MacEmojis is a menu-bar app for macOS that suggests emoji as you type — in any app. Type, pause, and a small thought bubble appears above the line with emoji that fit the moment. Click one to insert it.
 
 > **Status: source-code release (0.1.0).** There is no signed or notarized binary yet. Build from source below.
