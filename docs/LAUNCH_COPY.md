@@ -444,6 +444,123 @@ end
 
 > MacEmojis is a menu-bar app that suggests emoji for whatever you are typing. Pause and a thought bubble appears above the line; click an emoji to insert it. Type `:cake` to replace a token, or select words to rank emoji for the selection. Everything runs on-device with a 5 MB model. No account, no analytics, no text leaves your Mac. Free and open source.
 
+### LinkedIn
+
+> Desert Ant Labs is a hyper-focused lab building AI models that run on your own device. One of them, Emo, reads a line of text and tells you which emoji fit the moment.
+>
+> I used it to build MacEmojis.
+>
+> I type "i want a cake". I pause. A little thought bubble appears above the line: 🎂 🍰 🥳. I click one and it's in the sentence. That's the whole interaction.
+>
+> Why it's nice:
+>
+> • The model is 5 MB and runs offline. Your text never leaves the Mac.
+> • No picker to scroll, and no account, ads or analytics.
+> • Works anywhere macOS exposes a text field — native apps, Slack, Gmail, X.
+> • Type :cake and it replaces the token. Highlight a word and pause to rank emoji for it.
+>
+> It's free and open source (MIT). macOS 15+ on Apple Silicon only, built from source for now.
+>
+> Repo is in the comments 👇
+>
+> I'd love feedback: which apps does it fail in, and does the bubble sit in the right place?
+
+### X — single post
+
+> I type "i want a cake", pause, and a bubble offers 🎂 🍰 🥳. One click and it's in.
+>
+> MacEmojis: emoji suggestions as you type, anywhere on macOS. Powered by Emo, a 5 MB on-device model from Desert Ant Labs.
+>
+> Free & open source ↓
+> github.com/sharathkrml/mac-emojis
+
+### X — 3-post thread
+
+1/
+> I type "i want a cake", pause, and a bubble offers 🎂 🍰 🥳.
+>
+> One click and it's in. No picker.
+>
+> Watch: [screen recording]
+
+2/
+> The model is Emo, from Desert Ant Labs: 5 MB, runs on the Mac, ranks emoji for the last sentence you typed. No API call, no text uploaded.
+>
+> The app is MacEmojis. Menu bar, no Dock icon, works anywhere macOS has a text field.
+
+3/
+> Free and open source (MIT). macOS 15+, Apple Silicon, build from source today.
+>
+> github.com/sharathkrml/mac-emojis
+>
+> Tell me which app the bubble fails in — that's the feedback I want most.
+
+### Instagram Reel — ~40s
+
+Voiceover + burned-in captions. Screen recording of the real app, cropped to 9:16.
+
+```text
+0:00–0:03  HOOK
+VO:   "Watch what happens when I pause after this sentence."
+SHOT: Notes, typing "i want a cake"
+TEXT: wait for it 👀
+
+0:03–0:08  PAYOFF
+VO:   "A bubble shows up with the emoji I actually meant. One click."
+SHOT: bubble appears (🎂 🍰 🥳), click 🎂, sentence completes
+TEXT: no picker. no scrolling.
+
+0:08–0:13  WHO / WHAT
+VO:   "This is MacEmojis, a tiny app I built on top of Emo — a 5 MB AI model
+       from Desert Ant Labs that runs fully on your device."
+SHOT: app icon / menu bar / model "Ready" in onboarding
+TEXT: 5 MB. on-device.
+
+0:13–0:22  HOW
+VO:   "It reads the last sentence you typed and ranks the emoji that fit.
+       Nothing leaves the laptop. No account, no analytics."
+SHOT: type in Slack, then Gmail, bubble appears in each
+TEXT: your text stays on your Mac
+
+0:22–0:30  EXTRA
+VO:   "Type colon cake and it replaces the word. Highlight something and
+       pause to rank emoji for the selection."
+SHOT: :cake replace, then select a word and pause
+TEXT: works in almost any app
+
+0:30–0:38  CTA
+VO:   "It's free and open source. Repo is in the caption — build it,
+       and tell me which app it breaks in."
+SHOT: end card
+TEXT: MacEmojis · free & open source · link in bio
+```
+
+**Hook alternates:**
+
+- "I stopped picking emoji. My Mac does it now."
+- "You type. You pause. The emoji is already there."
+- "POV: your Mac knows which emoji you meant."
+
+**Caption:**
+
+> POV: you never open the emoji picker again.
+>
+> MacEmojis suggests the emoji you meant as you type — anywhere on your Mac. Built on Emo, a 5 MB on-device model from Desert Ant Labs. Your text never leaves the laptop.
+>
+> Free and open source. Link in bio → github.com/sharathkrml/mac-emojis
+>
+> macOS 15+, Apple Silicon. Build from source for now.
+>
+> #buildinpublic #macos #swiftui #ondeviceai #opensource #indiedev #emoji
+
+**Notes:**
+
+- Instagram links in captions and comments are not clickable. Use "link in bio" while this is fresh, and keep the repo pinned in your bio.
+- Record at 2x and crop. Turn on Do Not Disturb, close personal tabs, and use fake text only.
+- Burn in captions; most viewers watch muted.
+- Keep each shot under 3s. The bubble must be visible for at least 2s.
+- Post the same reel as a native video on LinkedIn too, with the repo in the first comment.
+
 ---
 
 ## Screenshot / GIF shot list

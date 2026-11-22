@@ -18,3 +18,4 @@ Config/Local.xcconfig
 
 # Local AI tooling
 .opencode/
+.scratch/
